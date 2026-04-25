@@ -453,8 +453,8 @@ export default function App() {
             key={`yayla-${yayla.id}`}
             longitude={yayla.longitude} 
             latitude={yayla.latitude}
-            anchor="bottom"
-            offset={[0, -25]} // İlçe isimlerini kapatmaması için yukarı kaydırıldı
+            anchor="center"
+            offset={[0, 0]} // Yolun tam başladığı noktada durması için offset sıfırlandı
             onClick={(e) => {
               e.originalEvent.stopPropagation();
               onSelectYayla(yayla);
