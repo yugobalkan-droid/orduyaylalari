@@ -418,10 +418,8 @@ export default function App() {
 
         {/* KM Etiketleri - Haritadan kaldırıldı, ilçe isminin altına taşındı */}
 
-        {/* İlçe İşaretçileri - Rota çizildiğinde sadece hedef ilçeleri göster */}
-        {ilceler
-          .filter(ilce => targetDistricts.length === 0 || targetDistricts.includes(ilce.id))
-          .map((ilce) => {
+        {/* İlçe İşaretçileri - Her zaman tüm ilçeleri göster, sadece hedefleri vurgula */}
+        {ilceler.map((ilce) => {
             // Bu ilçe için mesafe etiketini bul
             const label = routeLabels.find(l => 
               (ilce.isMerkez && l.color === '#ef4444') || (!ilce.isMerkez && l.color === '#f97316')

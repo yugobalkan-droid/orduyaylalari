@@ -378,7 +378,7 @@ body {
 }
 
 .ilce-icon {
-  font-size: 18px;
+  font-size: 14px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
@@ -405,10 +405,10 @@ body {
 .ilce-name {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
-  font-size: 13px; /* Biraz küçültüldü */
+  font-size: 10px; /* Biraz küçültüldü */
   color: #ffffff;
   background: rgba(15, 23, 42, 0.9);
-  padding: 3px 8px;
+  padding: 2px 5px;
   border-radius: 5px;
   margin-top: 2px;
   white-space: nowrap;
@@ -417,16 +417,16 @@ body {
 }
 
 .ilce-marker.merkez .ilce-icon {
-  font-size: 24px;
+  font-size: 18px;
 }
 
 .ilce-marker.merkez .ilce-name {
   color: #fbbf24;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 800;
   background: #0f172a;
   border-color: #fbbf24;
-  padding: 6px 12px;
+  padding: 4px 8px;
 }
 
 .mapboxgl-popup-close-button {
@@ -571,6 +571,7 @@ body {
 .menu-title {
   font-size: 1.5rem;
   font-weight: 900;
+  line-height: 1.5; /* Satır arası boşluk arttırıldı */
   background: linear-gradient(135deg, #4ade80, #22c55e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
