@@ -1,0 +1,1 @@
+Bu klasore 1.jpg, 2.jpg, 3.jpg, 4.jpg isimleriyle tam 4 adet resim atin. Sisteme otomatik yansiyacaktir.
