@@ -269,18 +269,17 @@ export default function App() {
     setDistToMerkez(null);
     setTotalDistance(null);
     setRouteLabels([]);
+    setSelectedYayla(null); // Seçimi iptal et ki diğer yaylalar geri gelsin
     
-    // Rotayı kapatınca kamerayı yaylaya geri yaklaştır
-    if (selectedYayla) {
-      mapRef.current?.flyTo({
-        center: [selectedYayla.longitude, selectedYayla.latitude],
-        zoom: 12,
-        pitch: 65,
-        bearing: 30,
-        duration: 2000,
-        essential: true
-      });
-    }
+    // Rotayı kapatınca kamerayı genel Ordu görünümüne geri al
+    mapRef.current?.flyTo({
+      center: [initialViewState.longitude, initialViewState.latitude],
+      zoom: initialViewState.zoom,
+      pitch: initialViewState.pitch,
+      bearing: initialViewState.bearing,
+      duration: 2000,
+      essential: true
+    });
   };
 
   if (showLanding) {
