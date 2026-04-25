@@ -262,6 +262,27 @@ export default function App() {
     }
   };
 
+  const handleClearRoute = () => {
+    setRouteData(null);
+    setTargetDistricts([]);
+    setNearestDistrict(null);
+    setDistToMerkez(null);
+    setTotalDistance(null);
+    setRouteLabels([]);
+    
+    // Rotayı kapatınca kamerayı yaylaya geri yaklaştır
+    if (selectedYayla) {
+      mapRef.current?.flyTo({
+        center: [selectedYayla.longitude, selectedYayla.latitude],
+        zoom: 12,
+        pitch: 65,
+        bearing: 30,
+        duration: 2000,
+        essential: true
+      });
+    }
+  };
+
   if (showLanding) {
     return (
       <div className="landing-page" style={{ backgroundImage: `url(${landingBg})` }}>
@@ -358,6 +379,13 @@ export default function App() {
                       <div className="dist-item total" style={{marginTop: '4px', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)'}}>
                         <strong style={{color: '#4ade80'}}>Toplam Mesafe:</strong> <span style={{color: '#4ade80', fontWeight: '900'}}>{totalDistance}</span>
                       </div>
+                      <button 
+                        className="clear-route-btn" 
+                        onClick={(e) => { e.stopPropagation(); handleClearRoute(); }}
+                        style={{marginTop: '10px', width: '100%', padding: '8px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'}}
+                      >
+                        ❌ Rotayı Kapat
+                      </button>
                     </div>
                   )}
                   
