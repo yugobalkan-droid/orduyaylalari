@@ -1,0 +1,21 @@
+export const ilceler = [
+  { id: 1, name: "Altınordu (Merkez)", latitude: 40.9862, longitude: 37.8797, isMerkez: true },
+  { id: 2, name: "Akkuş", latitude: 40.7936, longitude: 37.0147, isMerkez: false },
+  { id: 3, name: "Aybastı", latitude: 40.6869, longitude: 37.3986, isMerkez: false },
+  { id: 4, name: "Çamaş", latitude: 40.9114, longitude: 37.5186, isMerkez: false },
+  { id: 5, name: "Çatalpınar", latitude: 40.9031, longitude: 37.4764, isMerkez: false },
+  { id: 6, name: "Çaybaşı", latitude: 40.9856, longitude: 37.0603, isMerkez: false },
+  { id: 7, name: "Fatsa", latitude: 41.0264, longitude: 37.5008, isMerkez: false },
+  { id: 8, name: "Gölköy", latitude: 40.6864, longitude: 37.6186, isMerkez: false },
+  { id: 9, name: "Gülyalı", latitude: 40.9786, longitude: 38.0583, isMerkez: false },
+  { id: 10, name: "Gürgentepe", latitude: 40.8258, longitude: 37.6078, isMerkez: false },
+  { id: 11, name: "İkizce", latitude: 40.9664, longitude: 37.0500, isMerkez: false },
+  { id: 12, name: "Kabadüz", latitude: 40.8258, longitude: 37.9317, isMerkez: false },
+  { id: 13, name: "Kabataş", latitude: 40.7425, longitude: 37.4478, isMerkez: false },
+  { id: 14, name: "Korgan", latitude: 40.8286, longitude: 37.3486, isMerkez: false },
+  { id: 15, name: "Kumru", latitude: 40.8753, longitude: 37.2611, isMerkez: false },
+  { id: 16, name: "Mesudiye", latitude: 40.4572, longitude: 37.7725, isMerkez: false },
+  { id: 17, name: "Perşembe", latitude: 41.0664, longitude: 37.7733, isMerkez: false },
+  { id: 18, name: "Ulubey", latitude: 40.8722, longitude: 37.7558, isMerkez: false },
+  { id: 19, name: "Ünye", latitude: 41.1308, longitude: 37.2917, isMerkez: false }
+];
