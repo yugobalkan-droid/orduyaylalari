@@ -227,8 +227,8 @@ export default function App() {
       const mid2 = getMidpoint(route2.geometry);
 
       setRouteLabels([
-        { lng: mid1[0], lat: mid1[1], text: nearestKm, color: '#f97316' },
-        { lng: mid2[0], lat: mid2[1], text: merkezKm, color: '#ef4444' }
+        { lng: mid1[0], lat: mid1[1], text: nearestKm, color: '#f97316', ilceId: nearest.id },
+        { lng: mid2[0], lat: mid2[1], text: merkezKm, color: '#ef4444', ilceId: merkez.id }
       ]);
 
       setTargetDistricts([nearest.id, merkez.id]);
@@ -421,9 +421,7 @@ export default function App() {
         {/* İlçe İşaretçileri - Her zaman tüm ilçeleri göster, sadece hedefleri vurgula */}
         {ilceler.map((ilce) => {
             // Bu ilçe için mesafe etiketini bul
-            const label = routeLabels.find(l => 
-              (ilce.isMerkez && l.color === '#ef4444') || (!ilce.isMerkez && l.color === '#f97316')
-            );
+            const label = routeLabels.find(l => l.ilceId === ilce.id);
 
             return (
               <Marker 
