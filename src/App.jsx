@@ -448,13 +448,13 @@ export default function App() {
           })}
 
         {/* Yayla İşaretçileri (Markers) */}
-        {(viewMode === 'map' || !selectedYayla ? yaylalar : [selectedYayla]).map((yayla) => (
+        {(!selectedYayla ? yaylalar : [selectedYayla]).map((yayla) => (
           <Marker 
             key={`yayla-${yayla.id}`}
             longitude={yayla.longitude} 
             latitude={yayla.latitude}
             anchor="bottom"
-            offset={[25, 0]} // İlçe isimlerini kapatmaması için biraz sağa kaydır
+            offset={[0, -25]} // İlçe isimlerini kapatmaması için yukarı kaydırıldı
             onClick={(e) => {
               e.originalEvent.stopPropagation();
               onSelectYayla(yayla);
