@@ -419,14 +419,14 @@ export default function App() {
       >
         <NavigationControl position="bottom-right" visualizePitch={true} />
         
-        {/* Yol Katmanı (Şeffaf ESRI World Transportation) */}
+        {/* Yol Katmanı (Tüm yolları ve detayları içeren şeffaf katman) */}
         {showRoads && (
-          <Source id="roads-source" type="raster" tiles={['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}']} tileSize={256}>
+          <Source id="roads-source" type="raster" tiles={['https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}']} tileSize={256}>
             <Layer
               id="roads-layer"
               type="raster"
               paint={{
-                'raster-opacity': 0.7
+                'raster-opacity': 0.85
               }}
             />
           </Source>
