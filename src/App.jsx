@@ -228,7 +228,7 @@ export default function App() {
 
       setRouteLabels([
         { lng: mid1[0], lat: mid1[1], text: nearestKm, color: '#f97316', ilceId: nearest.id },
-        { lng: mid2[0], lat: mid2[1], text: merkezKm, color: '#ef4444', ilceId: merkez.id }
+        { lng: mid2[0], lat: mid2[1], text: totalKm, color: '#ef4444', ilceId: merkez.id }
       ]);
 
       setTargetDistricts([nearest.id, merkez.id]);
