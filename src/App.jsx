@@ -118,7 +118,7 @@ export default function App() {
   const [popupMode, setPopupMode] = useState(null); // 'menu', 'gallery'
   const [isRouting, setIsRouting] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
-
+  const [showRoads, setShowRoads] = useState(false);
   
   const [nearestDistrict, setNearestDistrict] = useState(null);
   const [distToMerkez, setDistToMerkez] = useState(null);
@@ -342,6 +342,13 @@ export default function App() {
           >
             📋 Panel Görünümü
           </button>
+          <button 
+            className={`view-btn ${showRoads ? 'active' : ''}`}
+            onClick={() => setShowRoads(!showRoads)}
+            title="Yolları Göster/Gizle"
+          >
+            🛣️ Yollar
+          </button>
         </div>
 
         <h1>Ordu Yaylaları</h1>
@@ -412,6 +419,19 @@ export default function App() {
       >
         <NavigationControl position="bottom-right" visualizePitch={true} />
         
+        {/* Yol Katmanı (Şeffaf ESRI World Transportation) */}
+        {showRoads && (
+          <Source id="roads-source" type="raster" tiles={['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}']} tileSize={256}>
+            <Layer
+              id="roads-layer"
+              type="raster"
+              paint={{
+                'raster-opacity': 0.7
+              }}
+            />
+          </Source>
+        )}
+
         {/* Ordu İl Sınırı */}
         {orduBorder && (
           <Source id="ordu-border-source" type="geojson" data={orduBorder}>
