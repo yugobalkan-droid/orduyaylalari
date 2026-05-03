@@ -173,6 +173,11 @@ export default function App() {
     setSelectedYayla(yayla);
     setPopupMode('menu'); // Tıklandığında önce menü açılsın
     setRouteData(null);
+    setNearestDistrict(null);
+    setDistToMerkez(null);
+    setTotalDistance(null);
+    setRouteLabels([]);
+    setTargetDistricts([]);
     
     mapRef.current?.flyTo({
       center: [yayla.longitude, yayla.latitude],
@@ -184,37 +189,43 @@ export default function App() {
     });
   }, []);
 
-  const handleCalculateRoute = async () => {
+  const handleCalculateRoute = async (targetIlce = null) => {
     if (!selectedYayla) return;
     setIsRouting(true);
     setPopupMode(null); // Rota çizilirken menüyü kapat
     
-    // 1. Önce kuş uçuşu mesafeyle en yakın ilçeyi bul
-    let minDistance = Infinity;
-    let nearest = null;
-    ilceler.forEach(ilce => {
-      const dist = calculateDistance(selectedYayla.latitude, selectedYayla.longitude, ilce.latitude, ilce.longitude);
-      if (dist < minDistance) {
-        minDistance = dist;
-        nearest = ilce;
-      }
-    });
+    let route1, route2;
+    let nearest = targetIlce;
 
-    // 2. OSRM API'den gerçek rotaları çek
-    // Yayla -> En Yakın İlçe
-    const route1 = await fetchOSRMRoute(selectedYayla.longitude, selectedYayla.latitude, nearest.longitude, nearest.latitude);
-    // En Yakın İlçe -> İl Merkezi (Merkez)
-    const route2 = await fetchOSRMRoute(nearest.longitude, nearest.latitude, merkez.longitude, merkez.latitude);
+    if (!targetIlce) {
+      // 1. Önce kuş uçuşu mesafeyle en yakın ilçeyi bul (Eski mantık)
+      let minDistance = Infinity;
+      ilceler.forEach(ilce => {
+        const dist = calculateDistance(selectedYayla.latitude, selectedYayla.longitude, ilce.latitude, ilce.longitude);
+        if (dist < minDistance) {
+          minDistance = dist;
+          nearest = ilce;
+        }
+      });
+
+      // Eski mantık: Yayla -> En Yakın İlçe -> Merkez
+      route1 = await fetchOSRMRoute(selectedYayla.longitude, selectedYayla.latitude, nearest.longitude, nearest.latitude);
+      route2 = await fetchOSRMRoute(nearest.longitude, nearest.latitude, merkez.longitude, merkez.latitude);
+    } else {
+      // Yeni mantık: Sadece Yayla -> Seçilen İlçe
+      route1 = await fetchOSRMRoute(selectedYayla.longitude, selectedYayla.latitude, targetIlce.longitude, targetIlce.latitude);
+      route2 = null;
+    }
 
     setIsRouting(false);
 
-    if (route1 && route2) {
-      const nearestKm = (route1.distance / 1000).toFixed(1) + ' km';
-      const merkezKm = (route2.distance / 1000).toFixed(1) + ' km';
-      const totalKm = ((route1.distance + route2.distance) / 1000).toFixed(1) + ' km';
+    if (route1) {
+      const dist1Km = (route1.distance / 1000).toFixed(1) + ' km';
+      const dist2Km = route2 ? (route2.distance / 1000).toFixed(1) + ' km' : null;
+      const totalKm = route2 ? ((route1.distance + route2.distance) / 1000).toFixed(1) + ' km' : dist1Km;
 
-      setNearestDistrict({ ...nearest, distance: nearestKm });
-      setDistToMerkez(merkezKm);
+      setNearestDistrict({ ...nearest, distance: dist1Km });
+      setDistToMerkez(dist2Km);
       setTotalDistance(totalKm);
 
       // Etiketler için orta noktaları hesapla
@@ -224,31 +235,40 @@ export default function App() {
       };
 
       const mid1 = getMidpoint(route1.geometry);
-      const mid2 = getMidpoint(route2.geometry);
+      const labels = [
+        { lng: mid1[0], lat: mid1[1], text: dist1Km, color: '#f97316', ilceId: nearest.id }
+      ];
 
-      setRouteLabels([
-        { lng: mid1[0], lat: mid1[1], text: nearestKm, color: '#f97316', ilceId: nearest.id },
-        { lng: mid2[0], lat: mid2[1], text: totalKm, color: '#ef4444', ilceId: merkez.id }
-      ]);
+      if (route2) {
+        const mid2 = getMidpoint(route2.geometry);
+        labels.push({ lng: mid2[0], lat: mid2[1], text: totalKm, color: '#ef4444', ilceId: merkez.id });
+        setTargetDistricts([nearest.id, merkez.id]);
+      } else {
+        setTargetDistricts([nearest.id]);
+      }
 
-      setTargetDistricts([nearest.id, merkez.id]);
+      setRouteLabels(labels);
 
-      const routeGeojson = {
+      const features = [
+        {
+          type: 'Feature',
+          properties: { color: '#f97316' }, // Turuncu
+          geometry: route1.geometry
+        }
+      ];
+
+      if (route2) {
+        features.push({
+          type: 'Feature',
+          properties: { color: '#ef4444' }, // Kırmızı
+          geometry: route2.geometry
+        });
+      }
+
+      setRouteData({
         type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            properties: { color: '#f97316' }, // Turuncu (Yayla-İlçe)
-            geometry: route1.geometry
-          },
-          {
-            type: 'Feature',
-            properties: { color: '#ef4444' }, // Kırmızı (İlçe-İl)
-            geometry: route2.geometry
-          }
-        ]
-      };
-      setRouteData(routeGeojson);
+        features: features
+      });
 
       // Yolları görebilmek için kamerayı uzaklaştır
       mapRef.current?.flyTo({
@@ -261,6 +281,7 @@ export default function App() {
       });
     }
   };
+
 
   const handleClearRoute = () => {
     setRouteData(null);
@@ -334,13 +355,13 @@ export default function App() {
             className={`view-btn ${viewMode === 'map' ? 'active' : ''}`}
             onClick={() => setViewMode('map')}
           >
-            🗺️ Harita Görünümü
+            🗺️ Yaylalar
           </button>
           <button 
-            className={`view-btn ${viewMode === 'panel' ? 'active' : ''}`}
-            onClick={() => setViewMode('panel')}
+            className={`view-btn ${viewMode === 'kamp' ? 'active' : ''}`}
+            onClick={() => setViewMode('kamp')}
           >
-            📋 Panel Görünümü
+            ⛺ Kamp Alanları
           </button>
           <button 
             className={`view-btn ${showRoads ? 'active' : ''}`}
@@ -351,63 +372,93 @@ export default function App() {
           </button>
         </div>
 
-        <h1>Ordu Yaylaları</h1>
+        <h1>{viewMode === 'kamp' ? 'İlçe Seçimi & Rota' : 'Ordu Yaylaları'}</h1>
+        
         <div className="yayla-list">
-          {sortedYaylalar.map((yayla) => (
-            <React.Fragment key={yayla.id}>
+          {viewMode === 'kamp' ? (
+            ilceler.map((ilce) => (
               <div 
-                className={`yayla-card ${selectedYayla?.id === yayla.id ? 'active' : ''}`}
-                onClick={() => onSelectYayla(yayla)}
+                key={ilce.id} 
+                className={`yayla-card ${targetDistricts.includes(ilce.id) ? 'active' : ''}`}
+                onClick={() => {
+                  if (selectedYayla) {
+                    handleCalculateRoute(ilce);
+                  } else {
+                    mapRef.current?.flyTo({
+                      center: [ilce.longitude, ilce.latitude],
+                      zoom: 11,
+                      duration: 1500
+                    });
+                  }
+                }}
               >
-                <img src={yayla.imageUrl} alt={yayla.name} />
                 <div className="yayla-card-info">
-                  <h3>{yayla.name}</h3>
-                  <span>🏔️ {yayla.altitude}</span>
+                  <h3>{ilce.name}</h3>
+                  <span style={{color: '#94a3b8', fontSize: '0.8rem'}}>
+                    {selectedYayla ? '🛣️ Buraya Rota Oluştur' : '🏛️ İlçeyi Göster'}
+                  </span>
                 </div>
               </div>
-
-              {/* Seçilen Yayla Detay Paneli - Hemen Altında Açılır */}
-              {selectedYayla?.id === yayla.id && (
-                <div className="selected-detail-inline">
-                  <div className="detail-meta">
-                    <span className="detail-badge">📍 Ordu</span>
-                    <span className="detail-badge">🏔️ {selectedYayla.altitude}</span>
+            ))
+          ) : (
+            sortedYaylalar.map((yayla) => (
+              <React.Fragment key={yayla.id}>
+                <div 
+                  className={`yayla-card ${selectedYayla?.id === yayla.id ? 'active' : ''}`}
+                  onClick={() => onSelectYayla(yayla)}
+                >
+                  <img src={yayla.imageUrl} alt={yayla.name} />
+                  <div className="yayla-card-info">
+                    <h3>{yayla.name}</h3>
+                    <span>🏔️ {yayla.altitude}</span>
                   </div>
-                  
-                  {nearestDistrict && (
-                    <div className="distance-info">
-                      <div className="dist-item nearest">
-                        <strong>{nearestDistrict.name}:</strong> {nearestDistrict.distance}
-                      </div>
-                      <div className="dist-item merkez">
-                        <strong>Altınordu:</strong> {distToMerkez}
-                      </div>
-                      <div className="dist-item total" style={{marginTop: '4px', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)'}}>
-                        <strong style={{color: '#4ade80'}}>Toplam Mesafe:</strong> <span style={{color: '#4ade80', fontWeight: '900'}}>{totalDistance}</span>
-                      </div>
-                      <button 
-                        className="clear-route-btn" 
-                        onClick={(e) => { e.stopPropagation(); handleClearRoute(); }}
-                        style={{marginTop: '10px', width: '100%', padding: '8px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'}}
-                      >
-                        ❌ Rotayı Kapat
-                      </button>
-                    </div>
-                  )}
-                  
-                  {isRouting && (
-                    <div className="distance-info" style={{background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', border: 'none'}}>
-                      Rota Hesaplanıyor... ⏳
-                    </div>
-                  )}
-                  <p>{selectedYayla.description}</p>
                 </div>
-              )}
-            </React.Fragment>
-          ))}
+
+                {/* Seçilen Yayla Detay Paneli - Hemen Altında Açılır */}
+                {selectedYayla?.id === yayla.id && (
+                  <div className="selected-detail-inline">
+                    <div className="detail-meta">
+                      <span className="detail-badge">📍 Ordu</span>
+                      <span className="detail-badge">🏔️ {selectedYayla.altitude}</span>
+                    </div>
+                    
+                    {nearestDistrict && (
+                      <div className="distance-info">
+                        <div className="dist-item nearest">
+                          <strong>{nearestDistrict.name}:</strong> {nearestDistrict.distance}
+                        </div>
+                        {distToMerkez && (
+                          <div className="dist-item merkez">
+                            <strong>Altınordu:</strong> {distToMerkez}
+                          </div>
+                        )}
+                        <div className="dist-item total" style={{marginTop: '4px', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.1)'}}>
+                          <strong style={{color: '#4ade80'}}>Toplam Mesafe:</strong> <span style={{color: '#4ade80', fontWeight: '900'}}>{totalDistance}</span>
+                        </div>
+                        <button 
+                          className="clear-route-btn" 
+                          onClick={(e) => { e.stopPropagation(); handleClearRoute(); }}
+                          style={{marginTop: '10px', width: '100%', padding: '8px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'}}
+                        >
+                          ❌ Rotayı Kapat
+                        </button>
+                      </div>
+                    )}
+                    
+                    {isRouting && (
+                      <div className="distance-info" style={{background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', border: 'none'}}>
+                        Rota Hesaplanıyor... ⏳
+                      </div>
+                    )}
+                    <p>{selectedYayla.description}</p>
+                  </div>
+                )}
+              </React.Fragment>
+            ))
+          )}
         </div>
-        )}
       </div>
+
 
       {/* 3D Harita - MapLibre */}
       <Map
@@ -556,7 +607,12 @@ export default function App() {
               >
                 🛣️ Uzaklık (Rota Çiz)
               </button>
-              <button className="menu-button disabled">⛺ Kamp Alanları</button>
+              <button 
+                className="menu-button" 
+                onClick={(e) => { e.stopPropagation(); setViewMode('kamp'); setPopupMode(null); }}
+              >
+                ⛺ Kamp Alanları (İlçe Seç)
+              </button>
             </div>
           </Popup>
         )}
